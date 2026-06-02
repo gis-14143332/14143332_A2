@@ -205,3 +205,27 @@ lcbd_df <- data.frame(
 write.csv(lcbd_df,
           file.path(output_dir, "results_LCBD_table.csv"),
           row.names = FALSE)
+# --- Export: LCBD as spatial vector points (shapefile) ----------------------
+# Create sf point object in British National Grid (EPSG:27700)
+lcbd_sf <- st_as_sf(lcbd_df,
+                    coords = c("X", "Y"),
+                    crs    = 27700)
+
+# Split into high and low LCBD layers for easy GIS use
+lcbd_high <- lcbd_sf[lcbd_sf$high_LCBD == TRUE,  ]
+lcbd_low  <- lcbd_sf[lcbd_sf$high_LCBD == FALSE, ]
+
+# Save as shapefiles
+st_write(lcbd_sf,
+         file.path(output_dir, "lcbd_all_points.shp"),
+         delete_layer = TRUE, quiet = TRUE)
+st_write(lcbd_high,
+         file.path(output_dir, "lcbd_high_points.shp"),
+         delete_layer = TRUE, quiet = TRUE)
+st_write(lcbd_low,
+         file.path(output_dir, "lcbd_low_points.shp"),
+         delete_layer = TRUE, quiet = TRUE)
+
+message("Saved -> lcbd_all_points.shp")
+message("Saved -> lcbd_high_points.shp  (", nrow(lcbd_high), " sites)")
+message("Saved -> lcbd_low_points.shp   (", nrow(lcbd_low),  " sites)")

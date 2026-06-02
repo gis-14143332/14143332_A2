@@ -768,7 +768,7 @@ nIter   <- 50000
 nBurn   <- 10000
 thin    <- 10
 
-set.seed(11)   # same seed as W10 practical
+set.seed(11)  
 cat("\nRunning MCMC (nChains =", nChains,
     ", samples =", nIter, ", transient =", nBurn,
     ", thin =", thin, ")...\n")
@@ -784,3 +784,53 @@ fit <- sampleMcmc(m,
 cat("MCMC sampling complete.\n")
 saveRDS(fit, file.path(output_dir, "hmsc_model_fitted.rds"))
 message("Saved -> hmsc_model_fitted.rds")
+# --- 5c: Convergence diagnostics --------------------------------
+mpost <- convertToCodaObject(fit)
+
+psrf_omega <- gelman.diag(mpost$Omega[[1]],
+                          multivariate = FALSE)$psrf
+psrf_beta  <- gelman.diag(mpost$Beta,
+                          multivariate = FALSE)$psrf
+
+cat("\nPSRF Beta  — mean:", round(mean(psrf_beta[, 1]),  3),
+    "  max:", round(max(psrf_beta[, 1]),  3), "\n")
+cat("PSRF Omega — mean:", round(mean(psrf_omega[, 1]), 3),
+    "  max:", round(max(psrf_omega[, 1]), 3), "\n")
+cat("Target: all PSRF < 1.1\n")
+
+# PSRF histogram
+png(file.path(output_dir, "fig05a_PSRF_omega.png"),
+    width = 1500, height = 900, res = 200)
+hist(psrf_omega[, 1],
+     main = "MCMC convergence: Gelman-Rubin PSRF (Omega)",
+     xlab = "PSRF value",
+     col  = "#9FE1CB", border = "white",
+     breaks = 20)
+abline(v = 1.1, col = "#D85A30", lwd = 2, lty = 2)
+legend("topright", legend = "Threshold = 1.1",
+       col = "#D85A30", lty = 2, lwd = 2, bty = "n")
+dev.off()
+message("Saved -> fig05a_PSRF_omega.png")
+
+# Save convergence table
+psrf_df <- data.frame(
+  parameter = c("Beta", "Omega"),
+  mean_PSRF = round(c(mean(psrf_beta[, 1]),
+                      mean(psrf_omega[, 1])), 3),
+  max_PSRF  = round(c(max(psrf_beta[, 1]),
+                      max(psrf_omega[, 1])), 3)
+)
+write.csv(psrf_df,
+          file.path(output_dir, "results_MCMC_convergence.csv"),
+          row.names = FALSE)
+
+# --- 5d: Species-environment response (plotBeta ) ---------------
+postBeta <- getPostEstimate(fit, "Beta")
+
+png(file.path(output_dir, "fig05b_plotBeta.png"),
+    width = 2200, height = 1400, res = 200)
+par(mar = c(6, 9, 2, 2))
+plotBeta(fit, postBeta, param = "Mean",
+         main = "Species responses to environmental predictors (beta)")
+dev.off()
+message("Saved -> fig05b_plotBeta.png")

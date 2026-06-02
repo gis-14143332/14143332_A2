@@ -383,3 +383,55 @@ write.csv(data.frame(variable = names(final_vif), VIF = final_vif),
 
 # Assign final env dataset
 env_sel <- env_work
+# --- 3c: Build CCA model-----------
+if (use_cca) {
+  cca_mod <- cca(comm_raw ~ ., data = env_sel)
+} else {
+  cca_mod <- rda(comm_hel ~ ., data = env_sel)
+}
+
+method_label <- if (use_cca) "CCA" else "RDA"
+cat("\n---", method_label, "model summary ---\n")
+print(summary(cca_mod))
+
+# Constrained variance
+constr_pct <- cca_mod$CCA$tot.chi / cca_mod$tot.chi * 100
+r2_adj     <- RsquareAdj(cca_mod)$adj.r.squared
+cat("Constrained variance:", round(constr_pct, 2), "%\n")
+cat("Adjusted R²:         ", round(r2_adj, 4), "\n")
+
+# Permutation tests
+set.seed(42)
+anova_overall <- anova.cca(cca_mod, permutations = 999)
+anova_axes    <- anova.cca(cca_mod, by = "axis",  permutations = 999)
+anova_terms   <- anova.cca(cca_mod, by = "terms", permutations = 999)
+
+cat("\nOverall model test:\n"); print(anova_overall)
+cat("\nBy axis:\n");            print(anova_axes)
+cat("\nBy term:\n");            print(anova_terms)
+
+# envfit passive fitting
+set.seed(42)
+ef <- envfit(cca_mod, env_sel, perm = 9999)
+print(ef)
+
+# Save stats
+cca_stats <- data.frame(
+  Metric = c("Method", "n_sites", "n_species", "n_predictors",
+             "Total_inertia", "Constrained_inertia_pct",
+             "Adjusted_R2", "Model_F", "Model_p"),
+  Value  = c(method_label, nrow(comm_raw), ncol(comm_raw),
+             ncol(env_sel),
+             round(cca_mod$tot.chi, 4),
+             round(constr_pct, 2),
+             round(r2_adj, 4),
+             round(anova_overall$F[1], 3),
+             round(anova_overall$`Pr(>F)`[1], 4))
+)
+write.csv(cca_stats,
+          file.path(output_dir, "results_CCA_statistics.csv"),
+          row.names = FALSE)
+write.csv(as.data.frame(anova_terms),
+          file.path(output_dir, "results_CCA_terms_anova.csv"))
+write.csv(as.data.frame(anova_axes),
+          file.path(output_dir, "results_CCA_axes_anova.csv"))

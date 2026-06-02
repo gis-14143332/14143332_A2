@@ -665,7 +665,7 @@ vp_plot_df <- data.frame(
   fill_col   = c("#1D9E75", "#9FE1CB", "#534AB7", "#D3D1C7")
 )
 # =============================================================================
-# SECTION 5: STAGE 4 — HMSC JSDM  (W10)
+# SECTION 5: STAGE 4 — HMSC JSDM  
 # =============================================================================
 
 cat("\n=== STAGE 4: Hmsc JSDM ===\n")
@@ -735,3 +735,25 @@ p_vp <- ggplot(vp_plot_df,
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(face = "bold"))
 savefig(p_vp, "fig04_variance_partitioning.png", w = 8, h = 5)
+# Step 3: Community matrix Y
+Y <- as.matrix(comm_hmsc)
+
+# Step 4: Random level
+cn          <- as.factor(rownames(comm_hmsc))
+studyDesign <- data.frame(sample = cn)
+rL          <- HmscRandomLevel(units = studyDesign$sample)
+
+# Step 5: Construct model
+# lognormal poisson: appropriate for over-dispersed count data
+# (abundance values range 0-2893, mean=35.9, 60% zeros)
+m <- Hmsc(Y           = Y,
+          XData       = XData,
+          XFormula    = XFormula,
+          studyDesign = studyDesign,
+          ranLevels   = list(sample = rL),
+          distr       = "lognormal poisson")
+
+cat("Hmsc model constructed\n")
+cat("Y dimensions:", nrow(Y), "sites x", ncol(Y), "species\n")
+cat("Fixed effects:", paste(sig_vars, collapse = ", "), "\n")
+cat("Distribution: lognormal poisson\n")

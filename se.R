@@ -505,3 +505,62 @@ p_triplot <- ggplot() +
   theme(plot.title    = element_text(face = "bold"),
         plot.subtitle = element_text(colour = "grey40"))
 savefig(p_triplot, "fig02_CCA_triplot.png", w = 11, h = 8)
+# --- Fig 3: NMDS exploratory plot --------------------------------
+set.seed(42)
+nmds <- metaMDS(comm_raw, distance = "bray", k = 2,
+                trymax = 100, trace = FALSE)
+cat("\nNMDS stress:", round(nmds$stress, 4),
+    if (nmds$stress < 0.1) "(excellent)"
+    else if (nmds$stress < 0.2) "(acceptable)" else "(poor)", "\n")
+
+nmds_sc  <- as.data.frame(scores(nmds)$sites)
+nmds_sp  <- as.data.frame(scores(nmds)$species)
+nmds_sc$Type <- cut(management, breaks = 3,
+                    labels = c("Low", "Medium", "High"))
+
+# Convex hull per management group 
+hull_df <- nmds_sc |>
+  group_by(Type) |>
+  slice(chull(NMDS1, NMDS2))
+
+# envfit vectors
+set.seed(42)
+ef_nmds    <- envfit(nmds, env_sel, perm = 9999)
+ef_vec     <- as.data.frame(scores(ef_nmds, display = "vectors"))
+ef_vec$var <- rownames(ef_vec)
+ef_sig     <- ef_vec[ef_nmds$vectors$pvals < 0.05, ]
+
+p_nmds <- ggplot(nmds_sc, aes(x = NMDS1, y = NMDS2)) +
+  geom_polygon(data = hull_df,
+               aes(fill = Type, group = Type),
+               alpha = 0.2) +
+  geom_point(aes(colour = Type, shape = Type), size = 3.5) +
+  ggrepel::geom_text_repel(data = nmds_sp,
+                           aes(x = NMDS1, y = NMDS2,
+                               label = rownames(nmds_sp)),
+                           size = 2.6, colour = "#534AB7",
+                           fontface = "italic", max.overlaps = 20) +
+  geom_segment(data = ef_sig,
+               aes(x = 0, y = 0, xend = NMDS1, yend = NMDS2),
+               arrow  = arrow(length = unit(0.2, "cm")),
+               colour = "black", linewidth = 0.8) +
+  ggrepel::geom_text_repel(data = ef_sig,
+                           aes(x = NMDS1 * 1.1, y = NMDS2 * 1.1,
+                               label = var),
+                           colour = "black", size = 3.5,
+                           fontface = "bold") +
+  scale_colour_manual(values = c("#1D9E75", "#534AB7", "#D85A30"),
+                      name = "Management") +
+  scale_fill_manual(values   = c("#1D9E75", "#534AB7", "#D85A30"),
+                    name = "Management") +
+  scale_shape_manual(values  = c(16, 17, 15), name = "Management") +
+  labs(title    = "NMDS ordination — carabid community composition",
+       subtitle = paste0("Bray-Curtis dissimilarity  |  Stress = ",
+                         round(nmds$stress, 3),
+                         "  |  Arrows: sig. env vectors (p < 0.05)"),
+       x = "NMDS1", y = "NMDS2") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"),
+        panel.border = element_rect(colour = "black",
+                                    fill = NA, linewidth = 0.8))
+savefig(p_nmds, "fig03_NMDS.png", w = 10, h = 7)

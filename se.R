@@ -122,3 +122,33 @@ cat("\nAlpha diversity (mean across sites):\n")
 cat("  Species richness (q=0):", round(alpha_q0, 3), "\n")
 cat("  Shannon index   (q=1):", round(alpha_q1, 3), "\n")
 cat("  Simpson index   (q=2):", round(alpha_q2, 3), "\n")
+# --- 2b: Beta diversity decomposition using vegetarian (W8 method) ----------
+beta_q0 <- d(comm_raw, lev = "beta", q = 0)
+beta_q1 <- d(comm_raw, lev = "beta", q = 1)
+gamma_q0 <- d(comm_raw, lev = "gamma", q = 0)
+
+cat("\nBeta diversity:\n")
+cat("  Multiplicative beta (q=0):", round(beta_q0, 3), "\n")
+cat("  Multiplicative beta (q=1):", round(beta_q1, 3), "\n")
+cat("  Gamma richness     (q=0):", round(gamma_q0, 3), "\n")
+
+# Beta diversity across Hill numbers (q=0 to 5) — W8 plot
+qN  <- 0:5
+qDat <- sapply(qN, function(q) {
+  out <- d(comm_raw, lev = "beta", q = q, boot = TRUE)
+  c(beta = out$D.Value, se = out$StdErr)
+})
+beta_df <- data.frame(q = qN, beta = qDat["beta",], se = qDat["se",])
+
+p_beta_q <- ggplot(beta_df, aes(x = q, y = beta)) +
+  geom_ribbon(aes(ymin = beta - se, ymax = beta + se),
+              fill = "#1D9E75", alpha = 0.25) +
+  geom_line(colour = "#1D9E75", linewidth = 1) +
+  geom_point(colour = "#085041", size = 3) +
+  labs(title = "Beta diversity across Hill number orders",
+       subtitle = "Scottish carabid beetle communities (n = 84 sites)",
+       x = "Order of diversity measure (q)",
+       y = "Multiplicative beta diversity") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold"))
+savefig(p_beta_q, "fig01a_beta_hill_numbers.png", w = 7, h = 5)

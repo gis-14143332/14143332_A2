@@ -104,3 +104,21 @@ p_sp <- ggplot(data.frame(sp = names(sp_tot), ab = sp_tot),
   theme(plot.title = element_text(face = "bold"),
         axis.text.y = element_text(face = "italic"))
 savefig(p_sp, "fig00_species_abundance.png", w = 8, h = 6)
+# =============================================================================
+# SECTION 2: STAGE 1 — BETA DIVERSITY + LCBD  (W8)
+# =============================================================================
+
+cat("\n=== STAGE 1: Beta diversity + LCBD ===\n")
+
+# Hellinger transformation (W8 + W9)
+comm_hel <- decostand(comm_raw, method = "hellinger")
+
+# --- 2a: Alpha diversity using vegetarian (W8 method) -----------------------
+alpha_q0 <- d(comm_raw, lev = "alpha", q = 0)   # species richness
+alpha_q1 <- d(comm_raw, lev = "alpha", q = 1)   # Shannon
+alpha_q2 <- d(comm_raw, lev = "alpha", q = 2)   # Simpson
+
+cat("\nAlpha diversity (mean across sites):\n")
+cat("  Species richness (q=0):", round(alpha_q0, 3), "\n")
+cat("  Shannon index   (q=1):", round(alpha_q1, 3), "\n")
+cat("  Simpson index   (q=2):", round(alpha_q2, 3), "\n")

@@ -253,3 +253,21 @@ writeRaster(lcbd_tif,
             file.path(output_dir, "lcbd_raster.tif"),
             overwrite = TRUE)
 message("Saved -> lcbd_raster.tif")
+# --- Fig 1b: LCBD bubble map --------------------
+png(file.path(output_dir, "fig01b_LCBD_map_baseR.png"),
+    width = 1800, height = 1800, res = 250)
+plot(coords,
+     cex.axis = 0.8,
+     pch      = 21,
+     col      = "black",
+     bg       = ifelse(high_lcbd, "#D85A30", "#1D9E75"),
+     cex      = lcbd_vals * 120,
+     main     = "Local Contribution to Beta Diversity (LCBD)",
+     xlab     = "Easting (BNG)",
+     ylab     = "Northing (BNG)")
+legend("topright",
+       legend = c("High LCBD (>mean+1SD)", "Low LCBD"),
+       pt.bg  = c("#D85A30", "#1D9E75"),
+       pch    = 21, pt.cex = 1.5, bty = "n", cex = 0.8)
+dev.off()
+message("Saved → fig01b_LCBD_map_baseR.png")

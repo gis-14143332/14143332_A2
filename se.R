@@ -314,3 +314,35 @@ p_lcbd_lcm <- ggplot() +
   theme(plot.title = element_text(face = "bold"))
 
 savefig(p_lcbd_lcm, "fig01c_LCBD_landcover.png", w = 9, h = 8)
+# =============================================================================
+# SECTION 3: STAGE 2 — CCA CONSTRAINED ORDINATION  (W9)
+# =============================================================================
+
+cat("\n=== STAGE 2: CCA constrained ordination ===\n")
+
+# --- 3a: DCA gradient length test — determines CCA vs RDA ------------------
+dca_res   <- decorana(comm_raw)
+print(dca_res)
+
+# Gradient length of axis 1
+dca_ax1 <- diff(range(scores(dca_res, display = "sites")[, 1]))
+cat("\nDCA Axis 1 gradient length:", round(dca_ax1, 3), "SD units\n")
+
+if (dca_ax1 > 3) {
+  cat("→ > 3 SD: UNIMODAL response → CCA selected\n")
+  use_cca <- TRUE
+} else {
+  cat("→ < 3 SD: LINEAR response → RDA selected\n")
+  use_cca <- FALSE
+}
+
+# Save DCA result
+dca_df <- data.frame(
+  Axis       = paste0("DCA", 1:4),
+  Eigenvalue = round(dca_res$evals, 4),
+  GradLength = round(apply(scores(dca_res, display = "sites"), 2,
+                           function(x) diff(range(x))), 3)
+)
+write.csv(dca_df,
+          file.path(output_dir, "results_DCA_gradient.csv"),
+          row.names = FALSE)

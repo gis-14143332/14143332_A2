@@ -152,3 +152,14 @@ p_beta_q <- ggplot(beta_df, aes(x = q, y = beta)) +
   theme_minimal(base_size = 12) +
   theme(plot.title = element_text(face = "bold"))
 savefig(p_beta_q, "fig01a_beta_hill_numbers.png", w = 7, h = 5)
+# Save diversity summary
+div_summary <- data.frame(
+  Metric  = c("Alpha richness (q=0)", "Alpha Shannon (q=1)",
+              "Alpha Simpson (q=2)", "Beta (q=0)", "Beta (q=1)",
+              "Gamma richness"),
+  Value   = round(c(alpha_q0, alpha_q1, alpha_q2,
+                    beta_q0, beta_q1, gamma_q0), 4)
+)
+write.csv(div_summary,
+          file.path(output_dir, "results_diversity_summary.csv"),
+          row.names = FALSE)

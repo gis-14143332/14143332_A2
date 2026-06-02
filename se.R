@@ -271,3 +271,46 @@ legend("topright",
        pch    = 21, pt.cex = 1.5, bty = "n", cex = 0.8)
 dev.off()
 message("Saved → fig01b_LCBD_map_baseR.png")
+
+# --- Fig 1c: LCBD bubble map with land cover --------------------------------
+lcm_path <- file.path(data_dir, "LCMUK_2000.tif")
+lcm      <- rast(lcm_path)
+lcm_agg  <- aggregate(lcm, fact = 10, fun = "modal")
+lcm_df   <- as.data.frame(lcm_agg, xy = TRUE)
+names(lcm_df)[3] <- "landcover"
+lcm_df$landcover <- as.factor(lcm_df$landcover)
+rm(lcm, lcm_agg); gc()
+
+lcm_cols <- c("0" = "#FFFFFF", "1" = "#27500A", "2" = "#085041",
+              "3" = "#FAC775", "4" = "#9FE1CB", "5" = "#B5D4F4",
+              "6" = "#888780", "7" = "#5DCAA5",
+              "8" = "#378ADD", "9" = "#185FA5")
+
+p_lcbd_lcm <- ggplot() +
+  geom_raster(data = na.omit(lcm_df),
+              aes(x = x, y = y, fill = landcover),
+              show.legend = FALSE) +
+  scale_fill_manual(values = lcm_cols, na.value = "white") +
+  ggnewscale::new_scale_fill() +
+  geom_point(data = lcbd_df,
+             aes(x = X, y = Y,
+                 size   = LCBD,
+                 colour = LCBD,
+                 shape  = high_LCBD),
+             alpha = 0.85) +
+  scale_colour_gradient(low  = "#9FE1CB", high = "#085041",
+                        name = "LCBD") +
+  scale_size_continuous(range = c(2, 8), guide = "none") +
+  scale_shape_manual(values = c(`FALSE` = 16, `TRUE` = 18),
+                     labels = c("Low LCBD", "High LCBD"),
+                     name   = "") +
+  coord_equal() +
+  labs(title    = "LCBD overlaid on UK Land Cover Map 2000",
+       subtitle = paste0("Diamonds: sites with LCBD > mean + 1 SD (n = ",
+                         sum(high_lcbd), ")"),
+       x = "Easting (BNG)", y = "Northing (BNG)",
+       caption = "Coordinates: British National Grid EPSG:27700") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"))
+
+savefig(p_lcbd_lcm, "fig01c_LCBD_landcover.png", w = 9, h = 8)

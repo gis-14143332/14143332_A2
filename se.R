@@ -346,3 +346,40 @@ dca_df <- data.frame(
 write.csv(dca_df,
           file.path(output_dir, "results_DCA_gradient.csv"),
           row.names = FALSE)
+# --- 3b: VIF screening using vif.cca (W9 compatible) -----------------------
+# Build a full CCA first, then check VIF per variable
+# Iteratively remove highest VIF variable until all < 10
+
+cat("\nVIF screening (threshold = 10):\n")
+env_work <- env_cont
+vif_log  <- data.frame()
+
+repeat {
+  cca_vif  <- cca(comm_raw ~ ., data = env_work)
+  vif_vals <- vif.cca(cca_vif)
+  max_vif  <- max(vif_vals)
+  if (max_vif < 10) break
+  drop_var <- names(which.max(vif_vals))
+  cat("  Removing:", drop_var, "  VIF =", round(max_vif, 2), "\n")
+  vif_log  <- rbind(vif_log,
+                    data.frame(variable = drop_var,
+                               VIF      = round(max_vif, 2)))
+  env_work <- env_work[, names(env_work) != drop_var, drop = FALSE]
+}
+
+cat("Retained variables (n =", ncol(env_work), "):",
+    paste(names(env_work), collapse = ", "), "\n")
+
+final_vif <- round(vif.cca(cca(comm_raw ~ ., data = env_work)), 3)
+cat("Final VIF values:\n"); print(final_vif)
+
+# Save VIF results
+write.csv(vif_log,
+          file.path(output_dir, "results_VIF_dropped.csv"),
+          row.names = FALSE)
+write.csv(data.frame(variable = names(final_vif), VIF = final_vif),
+          file.path(output_dir, "results_VIF_retained.csv"),
+          row.names = FALSE)
+
+# Assign final env dataset
+env_sel <- env_work

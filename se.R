@@ -253,7 +253,7 @@ writeRaster(lcbd_tif,
             file.path(output_dir, "lcbd_raster.tif"),
             overwrite = TRUE)
 message("Saved -> lcbd_raster.tif")
-# --- Fig 1b: LCBD bubble map --------------------
+# --- Fig 1b: LCBD bubble map (W8 style — base R version) --------------------
 png(file.path(output_dir, "fig01b_LCBD_map_baseR.png"),
     width = 1800, height = 1800, res = 250)
 plot(coords,

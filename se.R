@@ -623,11 +623,12 @@ m <- Hmsc(Y           = Y,
           ranLevels   = list(sample = rL),
           distr       = "lognormal poisson")
 
-# MCMC settings: thin=10 reduces autocorrelation; effective samples = 50000/10 = 5000 per chain
-nChains <- 2
-nIter   <- 50000
+# MCMC settings: thin=20 reduces autocorrelation; effective samples = 100000/20 = 5000 per chain
+# 4 chains provides more reliable PSRF convergence diagnostics than 2 chains
+nChains <- 4
+nIter   <- 100000
 nBurn   <- 10000
-thin    <- 10
+thin    <- 20
 
 set.seed(11)
 fit <- sampleMcmc(m,

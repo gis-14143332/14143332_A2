@@ -91,3 +91,16 @@ cat("Matrix sparsity:",
 coords     <- env_raw[, c("X", "Y")]
 management <- env_raw[["Management"]]
 env_cont   <- env_raw[, !names(env_raw) %in% c("X", "Y", "Sites", "Management")]
+
+# --- Fig 0: Species abundance barplot (data check) --------------------------
+sp_tot <- sort(colSums(comm_raw), decreasing = TRUE)
+p_sp <- ggplot(data.frame(sp = names(sp_tot), ab = sp_tot),
+               aes(x = reorder(sp, ab), y = ab)) +
+  geom_col(fill = "#1D9E75", width = 0.7) +
+  coord_flip() +
+  labs(title = "Total abundance per species (84 sites)",
+       x = NULL, y = "Total abundance") +
+  theme_minimal(base_size = 11) +
+  theme(plot.title = element_text(face = "bold"),
+        axis.text.y = element_text(face = "italic"))
+savefig(p_sp, "fig00_species_abundance.png", w = 8, h = 6)

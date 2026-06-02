@@ -87,3 +87,7 @@ cat("Community matrix:", nrow(comm_raw), "sites x", ncol(comm_raw), "species\n")
 cat("Environment table:", nrow(env_raw), "sites x", ncol(env_raw), "variables\n")
 cat("Matrix sparsity:",
     round(sum(comm_raw == 0) / prod(dim(comm_raw)) * 100, 1), "%\n")
+# Separate coordinates and management from predictors
+coords     <- env_raw[, c("X", "Y")]
+management <- env_raw[["Management"]]
+env_cont   <- env_raw[, !names(env_raw) %in% c("X", "Y", "Sites", "Management")]

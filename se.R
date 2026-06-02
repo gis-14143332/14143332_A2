@@ -889,3 +889,53 @@ plotGradient(fit, Gradient, pred = predY,
                            " along ", focal_var))
 dev.off()
 message("Saved -> fig05e_gradient_topspecies.png")
+# =============================================================================
+# SECTION 6: MASTER SUMMARY TABLE
+# =============================================================================
+
+master <- data.frame(
+  Metric = c(
+    "n_sites", "n_species_CCA", "n_species_hmsc", "matrix_sparsity_pct",
+    "alpha_richness_q0", "alpha_shannon_q1",
+    "beta_q0", "beta_q1", "gamma_q0",
+    "n_high_LCBD_sites",
+    "DCA_axis1_SD", "ordination_method",
+    "n_vars_after_VIF", "retained_variables",
+    "constrained_variance_pct", "adjusted_R2",
+    "model_F", "model_p",
+    "NMDS_stress",
+    "varpart_env_adjR2", "varpart_space_adjR2",
+    "varpart_shared_adjR2", "varpart_residual_adjR2",
+    "pure_env_p", "pure_space_p",
+    "hmsc_sig_vars", "hmsc_n_fixed_effects",
+    "MCMC_chains", "MCMC_samples", "MCMC_thin",
+    "Beta_mean_PSRF", "Omega_mean_PSRF"
+  ),
+  Value = c(
+    nrow(comm_raw), ncol(comm_raw), ncol(comm_hmsc),
+    round(sum(comm_raw == 0) / prod(dim(comm_raw)) * 100, 1),
+    round(alpha_q0, 3), round(alpha_q1, 3),
+    round(beta_q0, 3), round(beta_q1, 3), round(gamma_q0, 3),
+    sum(high_lcbd),
+    round(dca_ax1, 3), method_label,
+    ncol(env_sel), paste(names(env_sel), collapse = "; "),
+    round(constr_pct, 2), round(r2_adj, 4),
+    round(anova_overall$F[1], 3),
+    round(anova_overall$`Pr(>F)`[1], 4),
+    round(nmds$stress, 4),
+    round(vp$part$indfract$Adj.R.square[1], 4),
+    round(vp$part$indfract$Adj.R.square[2], 4),
+    round(vp$part$indfract$Adj.R.square[3], 4),
+    round(vp$part$indfract$Adj.R.square[4], 4),
+    round(anova_env$`Pr(>F)`[1], 4),
+    round(anova_spa$`Pr(>F)`[1], 4),
+    paste(sig_vars, collapse = "; "), length(sig_vars),
+    nChains, nIter, thin,
+    round(mean(psrf_beta[, 1]),  3),
+    round(mean(psrf_omega[, 1]), 3)
+  )
+)
+
+write.csv(master,
+          file.path(output_dir, "MASTER_results_summary.csv"),
+          row.names = FALSE)

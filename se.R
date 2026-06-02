@@ -1,3 +1,42 @@
+# =============================================================================
+# SECTION 0: SETUP — paths, packages, output folder
+# =============================================================================
+
+data_dir   <- "E:/manchester/study/semister2/71922se/a2/Assessment2_Data_GEOG71922/Beetles"
+output_dir <- file.path(data_dir, "output")
+dir.create(output_dir, showWarnings = FALSE)
+setwd(data_dir)
+
+# --- Step 0a: Install packages -----
+# repos set explicitly to avoid pop-up asking which mirror to use
+options(repos = c(CRAN = "https://cloud.r-project.org"))
+
+pkg_install <- function(pkg) {
+  if (!pkg %in% rownames(installed.packages())) {
+    message("Installing: ", pkg)
+    install.packages(pkg, dependencies = TRUE,
+                     quiet = TRUE, verbose = FALSE)
+  }
+}
+
+cran_pkgs <- c(
+  "vegan", "devtools",
+  "ggplot2", "ggrepel", "patchwork", "ggnewscale",
+  "dplyr", "tidyr",
+  "terra", "sf",
+  "corrplot", "RColorBrewer", "viridis",
+  "Hmsc", "coda",
+  "car",
+  "remotes"           # needed by devtools for vegetarian
+)
+
+invisible(lapply(cran_pkgs, pkg_install))
+
+if (!"vegetarian" %in% rownames(installed.packages())) {
+  message("Installing: vegetarian (via remotes)")
+  remotes::install_version("vegetarian", version = "1.2",
+                           quiet = TRUE, upgrade = "never")
+}
 # --- Step 0b: Load all packages ---------------------------------------------
 suppressPackageStartupMessages({
   library(vegan)

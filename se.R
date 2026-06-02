@@ -182,3 +182,14 @@ function_lcbd <- function(x) {
   site_LCBD  <- rowSums(ss_mat) / ss_total
   return(site_LCBD)
 }
+lcbd_vals <- function_lcbd(comm_raw)
+
+cat("\nLCBD values computed for", length(lcbd_vals), "sites\n")
+cat("Min:", round(min(lcbd_vals), 5),
+    "  Max:", round(max(lcbd_vals), 5),
+    "  Sum:", round(sum(lcbd_vals), 4), "\n")
+
+# Identify sites with high LCBD (above mean + 1SD — same threshold logic as W8)
+lcbd_threshold <- mean(lcbd_vals) + sd(lcbd_vals)
+high_lcbd      <- lcbd_vals > lcbd_threshold
+cat("Sites with high LCBD (>mean+1SD):", sum(high_lcbd), "\n")

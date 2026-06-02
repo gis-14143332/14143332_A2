@@ -229,3 +229,27 @@ st_write(lcbd_low,
 message("Saved -> lcbd_all_points.shp")
 message("Saved -> lcbd_high_points.shp  (", nrow(lcbd_high), " sites)")
 message("Saved -> lcbd_low_points.shp   (", nrow(lcbd_low),  " sites)")
+# --- Export: LCBD as raster (TIFF) ------------------------------------------
+# Rasterise LCBD point values to grid cells (nearest neighbour)
+lcbd_vect <- vect(lcbd_sf)
+
+if (file.exists(lcm_path)) {
+  lcm_ref   <- rast(lcm_path)
+  lcbd_rast <- rast(ext(lcm_ref),
+                    resolution = res(lcm_ref)[1] * 10,
+                    crs        = crs(lcm_ref))
+} else {
+  lcbd_rast <- rast(ext(lcbd_vect) + 10000,
+                    resolution = 5000,
+                    crs        = "EPSG:27700")
+}
+
+lcbd_tif <- rasterize(lcbd_vect,
+                      lcbd_rast,
+                      field = "LCBD",
+                      fun   = "mean")
+
+writeRaster(lcbd_tif,
+            file.path(output_dir, "lcbd_raster.tif"),
+            overwrite = TRUE)
+message("Saved -> lcbd_raster.tif")

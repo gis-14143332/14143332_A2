@@ -523,6 +523,44 @@ hull_df <- nmds_sc |>
   group_by(Type) |>
   slice(chull(NMDS1, NMDS2))
 
+# =============================================================================
+# SECTION 4: STAGE 3 — PARTIAL CCA + VARIANCE PARTITIONING
+# =============================================================================
+
+cat("\n=== STAGE 3: Partial CCA + variance partitioning ===\n")
+
+# --- 4a: Extract spatial vectors using pcnm ---------------------
+dist_mat <- as.matrix(dist(coords[, c("X", "Y")]))
+pcnm_res <- pcnm(dist_mat)
+
+# Keep only positive eigenvalue PCNM vectors 
+pos_pcnm   <- which(pcnm_res$values > 0)
+pcnm_scores <- as.data.frame(scores(pcnm_res)[, pos_pcnm])
+colnames(pcnm_scores) <- paste0("PCNM", pos_pcnm)
+
+cat("Total PCNM vectors with positive eigenvalues:", ncol(pcnm_scores), "\n")
+
+# Select significant PCNM vectors via forward selection
+if (use_cca) {
+  pcnm_null <- cca(comm_raw ~ 1, data = pcnm_scores)
+  pcnm_full <- cca(comm_raw ~ ., data = pcnm_scores)
+} else {
+  pcnm_null <- rda(comm_hel ~ 1, data = pcnm_scores)
+  pcnm_full <- rda(comm_hel ~ ., data = pcnm_scores)
+}
+
+set.seed(42)
+pcnm_step <- ordistep(pcnm_null,
+                      scope        = formula(pcnm_full),
+                      direction    = "forward",
+                      permutations = 999,
+                      trace        = FALSE)
+
+sel_pcnm_vars <- attr(terms(pcnm_step), "term.labels")
+cat("Selected PCNM vectors:", paste(sel_pcnm_vars, collapse = ", "), "\n")
+
+space_sel <- pcnm_scores[, sel_pcnm_vars, drop = FALSE]
+
 # envfit vectors
 set.seed(42)
 ef_nmds    <- envfit(nmds, env_sel, perm = 9999)

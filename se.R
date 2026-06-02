@@ -435,3 +435,73 @@ write.csv(as.data.frame(anova_terms),
           file.path(output_dir, "results_CCA_terms_anova.csv"))
 write.csv(as.data.frame(anova_axes),
           file.path(output_dir, "results_CCA_axes_anova.csv"))
+# --- Fig 2: CCA triplot ------------------------------------------
+ax1 <- paste0(method_label, "1")
+ax2 <- paste0(method_label, "2")
+
+site_sc <- as.data.frame(scores(cca_mod, display = "sites",   scaling = 2))
+sp_sc   <- as.data.frame(scores(cca_mod, display = "species", scaling = 2))
+bp_sc   <- as.data.frame(scores(cca_mod, display = "bp",      scaling = 2))
+
+site_sc$Management <- management
+site_sc$LCBD       <- lcbd_vals
+site_sc$high_lcbd  <- high_lcbd
+
+ax1_pct <- round(summary(cca_mod)$cont$importance[2, 1] * 100, 1)
+ax2_pct <- round(summary(cca_mod)$cont$importance[2, 2] * 100, 1)
+
+p_triplot <- ggplot() +
+  # Site points coloured by management, sized by LCBD
+  geom_point(data = site_sc,
+             aes(x      = .data[[ax1]],
+                 y      = .data[[ax2]],
+                 colour = Management,
+                 size   = LCBD),
+             alpha = 0.8) +
+  # Ring around high-LCBD sites
+  geom_point(data = subset(site_sc, high_lcbd),
+             aes(x = .data[[ax1]], y = .data[[ax2]]),
+             shape = 1, size = 6, colour = "#D85A30", stroke = 1.2) +
+  # Species labels (italic, purple — W9 style)
+  ggrepel::geom_text_repel(data = sp_sc,
+                           aes(x     = .data[[ax1]] * 0.8,
+                               y     = .data[[ax2]] * 0.8,
+                               label = rownames(sp_sc)),
+                           size = 2.8, colour = "#534AB7",
+                           fontface = "italic", max.overlaps = 25) +
+  # Environmental biplot arrows (W9 style)
+  geom_segment(data = bp_sc,
+               aes(x    = 0, y    = 0,
+                   xend = .data[[ax1]],
+                   yend = .data[[ax2]]),
+               arrow    = arrow(length = unit(0.22, "cm"), type = "closed"),
+               colour   = "black", linewidth = 0.8) +
+  ggrepel::geom_text_repel(data = bp_sc,
+                           aes(x     = .data[[ax1]] * 1.15,
+                               y     = .data[[ax2]] * 1.15,
+                               label = rownames(bp_sc)),
+                           size = 3.5, colour = "black",
+                           fontface = "bold", max.overlaps = 30) +
+  geom_hline(yintercept = 0, linetype = "dashed",
+             colour = "grey70", linewidth = 0.3) +
+  geom_vline(xintercept = 0, linetype = "dashed",
+             colour = "grey70", linewidth = 0.3) +
+  scale_colour_viridis_c(name = "Management\nintensity", option = "D") +
+  scale_size_continuous(name  = "LCBD", range = c(2, 6)) +
+  labs(
+    title    = paste0(method_label,
+                      " triplot — carabid community vs environment"),
+    subtitle = paste0("Constrained variance: ", round(constr_pct, 1),
+                      "%  |  adj.R² = ", round(r2_adj, 3),
+                      "  |  p = ",
+                      round(anova_overall$`Pr(>F)`[1], 3)),
+    x        = paste0(ax1, " (", ax1_pct, "%)"),
+    y        = paste0(ax2, " (", ax2_pct, "%)"),
+    caption  = paste0("Arrows = environmental predictors  |  ",
+                      "Italic purple = species  |  ",
+                      "Circle = high-LCBD site")
+  ) +
+  theme_minimal(base_size = 11) +
+  theme(plot.title    = element_text(face = "bold"),
+        plot.subtitle = element_text(colour = "grey40"))
+savefig(p_triplot, "fig02_CCA_triplot.png", w = 11, h = 8)

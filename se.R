@@ -876,3 +876,16 @@ plotGradient(fit, Gradient, pred = predY,
                            focal_var, " gradient"))
 dev.off()
 message("Saved -> fig05d_gradient_richness.png")
+# Most abundant species gradient
+top_sp <- names(sort(colSums(comm_hmsc), decreasing = TRUE))[1]
+sp_idx <- which(colnames(comm_hmsc) == top_sp)
+
+png(file.path(output_dir, "fig05e_gradient_topspecies.png"),
+    width = 1600, height = 1000, res = 200)
+plotGradient(fit, Gradient, pred = predY,
+             measure = "Y", index = sp_idx,
+             showData = TRUE,
+             main = paste0("Predicted abundance: ", top_sp,
+                           " along ", focal_var))
+dev.off()
+message("Saved -> fig05e_gradient_topspecies.png")

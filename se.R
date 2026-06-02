@@ -834,3 +834,22 @@ plotBeta(fit, postBeta, param = "Mean",
          main = "Species responses to environmental predictors (beta)")
 dev.off()
 message("Saved -> fig05b_plotBeta.png")
+# --- 5e: Omega co-occurrence matrix  ----------------------------
+OmegaCor <- computeAssociations(fit)
+toPlot   <- OmegaCor[[1]]$mean
+
+png(file.path(output_dir, "fig05c_omega_cooccurrence.png"),
+    width = 2000, height = 1900, res = 200)
+corrplot(toPlot,
+         method  = "color",
+         col     = colorRampPalette(c("#185FA5", "white", "#D85A30"))(200),
+         title   = "Residual species co-occurrence matrix (Omega)",
+         type    = "lower",
+         tl.col  = "black",
+         tl.cex  = 0.65,
+         mar     = c(0, 0, 3, 0))
+dev.off()
+message("Saved -> fig05c_omega_cooccurrence.png")
+
+write.csv(as.data.frame(toPlot),
+          file.path(output_dir, "results_Omega_matrix.csv"))

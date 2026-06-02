@@ -163,3 +163,22 @@ div_summary <- data.frame(
 write.csv(div_summary,
           file.path(output_dir, "results_diversity_summary.csv"),
           row.names = FALSE)
+# --- 2c: LCBD using teacher's W8 hand-written function ----------------------
+# Direct replication of the function_lcbd() from the W8 practical
+function_lcbd <- function(x) {
+  # Hellinger transformation
+  spe1 <- decostand(x, method = "hellinger")
+  # Empty matrix to store squared deviations
+  ss_mat <- spe1
+  ss_mat[] <- 0
+  # For each species: squared deviation from mean abundance across sites
+  for (i in 1:ncol(spe1)) {
+    sp.i       <- spe1[, i]
+    col_mean   <- mean(sp.i)
+    beta.i     <- sapply(sp.i, function(val) (val - col_mean)^2)
+    ss_mat[, i] <- beta.i
+  }
+  ss_total   <- sum(ss_mat)
+  site_LCBD  <- rowSums(ss_mat) / ss_total
+  return(site_LCBD)
+}

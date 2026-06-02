@@ -664,6 +664,36 @@ vp_plot_df <- data.frame(
                  vp$part$indfract$Adj.R.square[4]),
   fill_col   = c("#1D9E75", "#9FE1CB", "#534AB7", "#D3D1C7")
 )
+# =============================================================================
+# SECTION 5: STAGE 4 — HMSC JSDM  (W10)
+# =============================================================================
+
+cat("\n=== STAGE 4: Hmsc JSDM ===\n")
+
+# --- 5a: Prepare Hmsc inputs ------------------------------------------------
+
+# Step 1: Remove rare species (present in < 10% of sites = < 8 sites)
+# Rare species contribute little information but increase model complexity
+comm_hmsc <- comm_raw[, colSums(comm_raw > 0) >= 8]
+cat("Species after rare removal:", ncol(comm_hmsc),
+    "(removed:", ncol(comm_raw) - ncol(comm_hmsc), "rare species)\n")
+
+# Step 2: Use only CCA-significant variables as fixed effects
+# This reduces parameter space and improves convergence
+# Significant variables from CCA term-level permutation test (p < 0.05)
+cca_terms_hmsc <- read.csv(
+  file.path(output_dir, "results_CCA_terms_anova.csv"),
+  row.names = 1
+)
+
+# Use grep to find p-value column robustly across R versions
+# (Pr(>F) gets sanitised differently on different systems)
+p_col    <- grep("Pr", names(cca_terms_hmsc), value = TRUE)[1]
+sig_vars <- rownames(cca_terms_hmsc)[
+  !is.na(cca_terms_hmsc[[p_col]])         &
+    cca_terms_hmsc[[p_col]] < 0.05          &
+    rownames(cca_terms_hmsc) != "Residual"
+]
 
 p_vp <- ggplot(vp_plot_df,
                aes(x = reorder(fraction, adj_r2), y = adj_r2,

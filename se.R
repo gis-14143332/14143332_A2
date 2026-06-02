@@ -24,5 +24,27 @@ savefig <- function(p, name, w = 9, h = 7, dpi = 300) {
          width = w, height = h, dpi = dpi, bg = "white")
   message("Saved -> ", name)
 }
+# =============================================================================
+# SECTION 1: DATA IMPORT AND INSPECTION
+# =============================================================================
 
-cat("\n=== Setup complete. Working dir:", getwd(), "===\n")
+comm_raw <- read.csv("scot_beetle_community.csv", row.names = 1,
+                     check.names = FALSE)
+env_raw  <- read.csv("scot_beetle_env.csv",       row.names = 1,
+                     check.names = FALSE)
+
+# Remove any non-species columns from community matrix
+# The "Sites" column sometimes appears in community CSVs as a label column
+non_species <- c("Sites", "sites", "site", "Site")
+comm_raw <- comm_raw[, !names(comm_raw) %in% non_species]
+cat("Community matrix columns after cleaning:", ncol(comm_raw), "\n")
+cat("Column names:", paste(names(comm_raw), collapse = ", "), "\n")
+
+# Verify site order matches
+stopifnot("Site order mismatch between community and env data!" =
+            all(rownames(comm_raw) == rownames(env_raw)))
+
+cat("Community matrix:", nrow(comm_raw), "sites x", ncol(comm_raw), "species\n")
+cat("Environment table:", nrow(env_raw), "sites x", ncol(env_raw), "variables\n")
+cat("Matrix sparsity:",
+    round(sum(comm_raw == 0) / prod(dim(comm_raw)) * 100, 1), "%\n")

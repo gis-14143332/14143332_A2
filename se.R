@@ -193,3 +193,15 @@ cat("Min:", round(min(lcbd_vals), 5),
 lcbd_threshold <- mean(lcbd_vals) + sd(lcbd_vals)
 high_lcbd      <- lcbd_vals > lcbd_threshold
 cat("Sites with high LCBD (>mean+1SD):", sum(high_lcbd), "\n")
+# Save LCBD table
+lcbd_df <- data.frame(
+  site       = rownames(comm_raw),
+  X          = coords$X,
+  Y          = coords$Y,
+  LCBD       = lcbd_vals,
+  high_LCBD  = high_lcbd,
+  Management = management
+)
+write.csv(lcbd_df,
+          file.path(output_dir, "results_LCBD_table.csv"),
+          row.names = FALSE)

@@ -757,3 +757,30 @@ cat("Hmsc model constructed\n")
 cat("Y dimensions:", nrow(Y), "sites x", ncol(Y), "species\n")
 cat("Fixed effects:", paste(sig_vars, collapse = ", "), "\n")
 cat("Distribution: lognormal poisson\n")
+
+# --- 5b: MCMC sampling -------------------------------------------------------
+# Settings chosen to balance convergence and computational cost:
+# - thin=10 reduces autocorrelation between samples
+# - effective samples per chain = 50000/10 = 5000
+# - 2 chains x 5000 effective samples = 10000 total posterior samples
+nChains <- 2
+nIter   <- 50000
+nBurn   <- 10000
+thin    <- 10
+
+set.seed(11)   # same seed as W10 practical
+cat("\nRunning MCMC (nChains =", nChains,
+    ", samples =", nIter, ", transient =", nBurn,
+    ", thin =", thin, ")...\n")
+cat("Effective samples per chain:", nIter / thin, "\n")
+
+fit <- sampleMcmc(m,
+                  samples   = nIter,
+                  transient = nBurn,
+                  thin      = thin,
+                  nChains   = nChains,
+                  verbose   = 1000)
+
+cat("MCMC sampling complete.\n")
+saveRDS(fit, file.path(output_dir, "hmsc_model_fitted.rds"))
+message("Saved -> hmsc_model_fitted.rds")

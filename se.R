@@ -853,3 +853,26 @@ message("Saved -> fig05c_omega_cooccurrence.png")
 
 write.csv(as.data.frame(toPlot),
           file.path(output_dir, "results_Omega_matrix.csv"))
+
+# --- 5f: Gradient prediction  ------------------------------------
+# Predict community response along the strongest environmental gradient
+# Org (soil organic matter) has highest F value in CCA — use as focal variable
+# sig_vars[1] = Org (soil organic matter)
+# Chosen as focal variable: highest F-value in CCA term-level test (F=8.67, p=0.001)
+# sig_vars is ordered by original CCA input order; Org happens to be first and strongest
+focal_var <- sig_vars[1]
+cat("\nConstructing gradient prediction along:", focal_var, "\n")
+
+Gradient <- constructGradient(fit, focalVariable = focal_var)
+predY    <- predict(fit, Gradient = Gradient, expected = TRUE)
+
+# Species richness gradient
+png(file.path(output_dir, "fig05d_gradient_richness.png"),
+    width = 1600, height = 1000, res = 200)
+plotGradient(fit, Gradient, pred = predY,
+             measure = "S", index = 1,
+             showData = TRUE,
+             main = paste0("Predicted species richness along ",
+                           focal_var, " gradient"))
+dev.off()
+message("Saved -> fig05d_gradient_richness.png")

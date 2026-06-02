@@ -602,7 +602,7 @@ p_nmds <- ggplot(nmds_sc, aes(x = NMDS1, y = NMDS2)) +
         panel.border = element_rect(colour = "black",
                                     fill = NA, linewidth = 0.8))
 savefig(p_nmds, "fig03_NMDS.png", w = 10, h = 7)
-# --- 4b: Variance partitioning (W9 varpart) ---------------------------------
+# --- 4b: Variance partitioning  ---------------------------------
 if (use_cca) {
   vp <- varpart(comm_raw, env_sel, space_sel)
 } else {
@@ -652,3 +652,39 @@ vp_df <- data.frame(
 write.csv(vp_df,
           file.path(output_dir, "results_varpart.csv"),
           row.names = FALSE)
+# --- Fig 4: Variance partitioning bar chart ---------------------------------
+vp_plot_df <- data.frame(
+  fraction   = c("Pure\nenvironment [a]",
+                 "Shared\n[a∩b]",
+                 "Pure\nspace [b]",
+                 "Residual\n[c]"),
+  adj_r2     = c(vp$part$indfract$Adj.R.square[1],
+                 vp$part$indfract$Adj.R.square[3],
+                 vp$part$indfract$Adj.R.square[2],
+                 vp$part$indfract$Adj.R.square[4]),
+  fill_col   = c("#1D9E75", "#9FE1CB", "#534AB7", "#D3D1C7")
+)
+
+p_vp <- ggplot(vp_plot_df,
+               aes(x = reorder(fraction, adj_r2), y = adj_r2,
+                   fill = fill_col)) +
+  geom_col(width = 0.6, show.legend = FALSE) +
+  geom_text(aes(label = ifelse(adj_r2 >= 0,
+                               paste0(round(adj_r2 * 100, 1), "%"),
+                               paste0(round(adj_r2 * 100, 1), "%"))),
+            hjust = -0.15, size = 3.5) +
+  scale_fill_identity() +
+  coord_flip() +
+  ylim(min(vp_plot_df$adj_r2) - 0.05,
+       max(vp_plot_df$adj_r2) + 0.08) +
+  geom_vline(xintercept = 0, linetype = "dashed",
+             colour = "grey50", linewidth = 0.4) +
+  labs(title    = "Variance partitioning: environment vs space",
+       subtitle = paste0("Pure env p = ",
+                         round(anova_env$`Pr(>F)`[1], 3),
+                         "  |  Pure space p = ",
+                         round(anova_spa$`Pr(>F)`[1], 3)),
+       x = NULL, y = "Adjusted R²") +
+  theme_minimal(base_size = 12) +
+  theme(plot.title = element_text(face = "bold"))
+savefig(p_vp, "fig04_variance_partitioning.png", w = 8, h = 5)

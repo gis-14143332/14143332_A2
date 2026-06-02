@@ -602,3 +602,38 @@ p_nmds <- ggplot(nmds_sc, aes(x = NMDS1, y = NMDS2)) +
         panel.border = element_rect(colour = "black",
                                     fill = NA, linewidth = 0.8))
 savefig(p_nmds, "fig03_NMDS.png", w = 10, h = 7)
+# --- 4b: Variance partitioning (W9 varpart) ---------------------------------
+if (use_cca) {
+  vp <- varpart(comm_raw, env_sel, space_sel)
+} else {
+  vp <- varpart(comm_hel, env_sel, space_sel)
+}
+
+print(vp)
+
+# Test fractions via partial CCA
+set.seed(42)
+# Pure environment [a]: env conditioned on space
+if (use_cca) {
+  pCCA_env <- cca(comm_raw ~ . + Condition(as.matrix(space_sel)),
+                  data = env_sel)
+} else {
+  pCCA_env <- rda(comm_hel ~ . + Condition(as.matrix(space_sel)),
+                  data = env_sel)
+}
+anova_env <- anova.cca(pCCA_env, permutations = 999)
+
+# Pure space [b]: space conditioned on env
+if (use_cca) {
+  pCCA_spa <- cca(comm_raw ~ . + Condition(as.matrix(env_sel)),
+                  data = space_sel)
+} else {
+  pCCA_spa <- rda(comm_hel ~ . + Condition(as.matrix(env_sel)),
+                  data = space_sel)
+}
+anova_spa <- anova.cca(pCCA_spa, permutations = 999)
+
+cat("\nPure environment fraction p =",
+    round(anova_env$`Pr(>F)`[1], 4), "\n")
+cat("Pure space fraction p       =",
+    round(anova_spa$`Pr(>F)`[1], 4), "\n")

@@ -637,3 +637,18 @@ cat("\nPure environment fraction p =",
     round(anova_env$`Pr(>F)`[1], 4), "\n")
 cat("Pure space fraction p       =",
     round(anova_spa$`Pr(>F)`[1], 4), "\n")
+# Save variance partitioning results
+vp_df <- data.frame(
+  Fraction       = c("[env]", "[space]", "[env+space]", "[residual]"),
+  R2             = round(c(vp$part$fract$R.square[1],
+                           vp$part$fract$R.square[2],
+                           vp$part$indfract$R.square[3],
+                           vp$part$indfract$R.square[4]), 4),
+  Adj_R2         = round(c(vp$part$indfract$Adj.R.square[1],
+                           vp$part$indfract$Adj.R.square[2],
+                           vp$part$indfract$Adj.R.square[3],
+                           vp$part$indfract$Adj.R.square[4]), 4)
+)
+write.csv(vp_df,
+          file.path(output_dir, "results_varpart.csv"),
+          row.names = FALSE)

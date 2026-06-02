@@ -18,3 +18,11 @@ suppressPackageStartupMessages({
   library(car)
   library(vegetarian)
 })
+# --- Step 0c: Helper function -----------------------------------------------
+savefig <- function(p, name, w = 9, h = 7, dpi = 300) {
+  ggsave(file.path(output_dir, name), plot = p,
+         width = w, height = h, dpi = dpi, bg = "white")
+  message("Saved -> ", name)
+}
+
+cat("\n=== Setup complete. Working dir:", getwd(), "===\n")

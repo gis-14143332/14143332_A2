@@ -694,6 +694,23 @@ sig_vars <- rownames(cca_terms_hmsc)[
     cca_terms_hmsc[[p_col]] < 0.05          &
     rownames(cca_terms_hmsc) != "Residual"
 ]
+# Guard: if no variables reach p<0.05, relax threshold to p<0.1
+if (length(sig_vars) == 0) {
+  warning("No variables significant at p<0.05 — relaxing to p<0.10")
+  sig_vars <- rownames(cca_terms_hmsc)[
+    !is.na(cca_terms_hmsc[[p_col]])       &
+      cca_terms_hmsc[[p_col]] < 0.10        &
+      rownames(cca_terms_hmsc) != "Residual"
+  ]
+}
+
+cat("Significant CCA variables used as Hmsc fixed effects (n =",
+    length(sig_vars), "):\n",
+    paste(sig_vars, collapse = ", "), "\n")
+
+env_hmsc <- env_sel[, sig_vars, drop = FALSE]
+XData    <- data.frame(scale(env_hmsc))
+XFormula <- as.formula(paste("~", paste(sig_vars, collapse = " + ")))
 
 p_vp <- ggplot(vp_plot_df,
                aes(x = reorder(fraction, adj_r2), y = adj_r2,

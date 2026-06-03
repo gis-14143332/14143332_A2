@@ -1,12 +1,4 @@
 # =============================================================================
-# GEOG71922 Spatial Ecology — Assessment 2
-# Scottish Ground Beetle Community Analysis
-# Environmental and spatial drivers of carabid community composition
-# Student ID: [YOUR_STUDENT_ID]
-# =============================================================================
-
-
-# =============================================================================
 # SECTION 0: SETUP
 # =============================================================================
 

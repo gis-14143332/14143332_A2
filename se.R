@@ -457,11 +457,9 @@ p_nmds <- ggplot(nmds_sc, aes(x = NMDS1, y = NMDS2)) +
                                     fill = NA, linewidth = 0.8))
 savefig(p_nmds, "fig03_NMDS.png", w = 10, h = 7)
 
-
 # =============================================================================
 # SECTION 4: PARTIAL CCA + VARIANCE PARTITIONING
 # =============================================================================
-
 # Extract spatial structure using Principal Coordinates of Neighbourhood Matrices
 # Positive-eigenvalue PCNM vectors capture broad-to-fine spatial gradients
 dist_mat    <- as.matrix(dist(coords[, c("X", "Y")]))
@@ -557,11 +555,9 @@ p_vp <- ggplot(vp_plot_df,
   theme(plot.title = element_text(face = "bold"))
 savefig(p_vp, "fig04_variance_partitioning.png", w = 8, h = 5)
 
-
 # =============================================================================
 # SECTION 5: HMSC JSDM
 # =============================================================================
-
 # Remove rare species (present in fewer than 8 sites, i.e. < 10% of sites)
 # to reduce model complexity and improve MCMC convergence
 comm_hmsc <- comm_raw[, colSums(comm_raw > 0) >= 8]
@@ -702,11 +698,9 @@ plotGradient(fit, Gradient, pred = predY, measure = "Y", index = sp_idx,
                            " along ", focal_var))
 dev.off()
 
-
 # =============================================================================
 # SECTION 6: MASTER SUMMARY
 # =============================================================================
-
 master <- data.frame(
   Metric = c(
     "n_sites", "n_species_CCA", "n_species_hmsc", "matrix_sparsity_pct",

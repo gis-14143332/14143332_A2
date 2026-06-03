@@ -1,7 +1,6 @@
 # =============================================================================
 # SECTION 0: SETUP
 # =============================================================================
-
 data_dir   <- "E:/manchester/study/semister2/71922se/a2/Assessment2_Data_GEOG71922/Beetles"
 output_dir <- file.path(data_dir, "output")
 dir.create(output_dir, showWarnings = FALSE)
@@ -66,7 +65,6 @@ savefig <- function(p, name, w = 9, h = 7, dpi = 300) {
 # Path to land cover raster — defined here so it is available throughout
 lcm_path <- file.path(data_dir, "LCMUK_2000.tif")
 
-
 # =============================================================================
 # SECTION 1: DATA IMPORT
 # =============================================================================
@@ -100,11 +98,9 @@ p_sp <- ggplot(data.frame(sp = names(sp_tot), ab = sp_tot),
         axis.text.y = element_text(face = "italic"))
 savefig(p_sp, "fig00_species_abundance.png", w = 8, h = 6)
 
-
 # =============================================================================
 # SECTION 2: BETA DIVERSITY + LCBD
 # =============================================================================
-
 # Hellinger transformation standardises abundance by site totals,
 # reducing the influence of dominant species
 comm_hel <- decostand(comm_raw, method = "hellinger")
@@ -261,7 +257,6 @@ p_lcbd_lcm <- ggplot() +
   theme_minimal(base_size = 11) +
   theme(plot.title = element_text(face = "bold"))
 savefig(p_lcbd_lcm, "fig01c_LCBD_landcover.png", w = 9, h = 8)
-
 
 # =============================================================================
 # SECTION 3: CCA CONSTRAINED ORDINATION
